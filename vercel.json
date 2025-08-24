@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "name": "dividend-system-prototype",
+  "builds": [
+    {
+      "src": "**/*.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "functions": {},
+  "trailingSlash": false
+}

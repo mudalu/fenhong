@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分红计算管理 - 分红系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .breadcrumb {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .tab-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .tab-nav {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab-btn.active {
+            color: #007bff;
+            background: white;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #007bff;
+        }
+
+        .tab-content {
+            padding: 20px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .btn-lg {
+            padding: 12px 24px;
+            font-size: 16px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-calculating {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-locked {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-archived {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: #dc3545;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            background: white;
+            color: #007bff;
+            cursor: pointer;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .page-btn:hover {
+            background: #e9ecef;
+        }
+
+        .page-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .info-card {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-card h4 {
+            color: #0056b3;
+            margin-bottom: 10px;
+        }
+
+        .info-card p {
+            color: #495057;
+            margin: 5px 0;
+        }
+
+        .warning-card {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .warning-card h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .warning-card p {
+            color: #856404;
+            margin: 5px 0;
+        }
+
+        .calculation-panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .calculation-icon {
+            font-size: 64px;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        .calculation-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .calculation-desc {
+            color: #6c757d;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .summary-card p {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .amount-positive {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .amount-negative {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .progress-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #28a745);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .log-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                justify-content: stretch;
+            }
+            
+            .search-input {
+                min-width: auto;
+            }
+            
+            .data-table {
+                font-size: 12px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .calculation-panel {
+                padding: 20px;
+            }
+            
+            .calculation-icon {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>分红计算管理</h1>
+            <div class="breadcrumb">分红系统 > 分红计算管理</div>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('calculation')">分红计算服务</button>
+                <button class="tab-btn" onclick="switchTab('results')">计算结果管理</button>
+                <button class="tab-btn" onclick="switchTab('adjustment')">分红结果调整</button>
+            </div>
+
+            <!-- 分红计算服务 -->
+            <div id="calculation" class="tab-content active">
+                <div class="info-card">
+                    <h4>🧮 分红计算服务说明</h4>
+                    <p>• 基础公式：分红额 = 分红比例 × 分红利润</p>
+                    <p>• 计算前会校验门店比例是否为100%</p>
+                    <p>• 支持手动触发和定时计算</p>
+                    <p>• 计算时间通常在1分钟内完成</p>
+                </div>
+
+                <!-- 数据概览 -->
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <h3>2024-01</h3>
+                        <p>当前计算期间</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>25</h3>
+                        <p>参与门店数量</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3 class="amount-positive">¥2,580,000</h3>
+                        <p>本期分红总额</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>156</h3>
+                        <p>股东分红记录</p>
+                    </div>
+                </div>
+
+                <!-- 计算控制面板 -->
+                <div class="calculation-panel">
+                    <div class="calculation-icon">⚙️</div>
+                    <div class="calculation-title">分红计算引擎</div>
+                    <div class="calculation-desc">点击下方按钮开始计算本期分红额度</div>
+                    <div>
+                        <button class="btn btn-success btn-lg" onclick="startCalculation()">🚀 开始计算</button>
+                        <button class="btn btn-info btn-lg" onclick="previewCalculation()">👁️ 预览计算</button>
+                    </div>
+                </div>
+
+                <!-- 计算进度 -->
+                <div class="progress-section" id="calculationProgress" style="display: none;">
+                    <h4>计算进度</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">准备开始计算...</div>
+                    
+                    <div class="log-section">
+                        <div class="log-item">
+                            <span class="log-time">10:30:15</span> 开始校验分红比例数据...
+                        </div>
+                        <div class="log-item">
+                            <span class="log-time">10:30:16</span> 校验通过，共25个门店参与分红
+                        </div>
+                        <div class="log-item">
+                            <span class="log-time">10:30:17</span> 开始计算朝阳门店分红额...
+                        </div>
+                        <div class="log-item">
+                            <span class="log-time">10:30:18</span> 开始计算海淀门店分红额...
+                        </div>
+                        <div class="log-item">
+                            <span class="log-time">10:30:19</span> 计算完成，生成156条分红记录
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最近计算历史 -->
+                <div class="toolbar">
+                    <h4>最近计算历史</h4>
+                    <div>
+                        <button class="btn btn-secondary">📊 查看详细日志</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>计算批次</th>
+                            <th>计算期间</th>
+                            <th>门店数量</th>
+                            <th>分红总额</th>
+                            <th>计算状态</th>
+                            <th>计算时间</th>
+                            <th>耗时</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CALC202401001</td>
+                            <td>2024-01</td>
+                            <td>25</td>
+                            <td class="amount-positive">¥2,580,000</td>
+                            <td><span class="status-badge status-completed">计算完成</span></td>
+                            <td>2024-01-20 10:30</td>
+                            <td>45秒</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewCalculationResult(1)">👁️ 查看结果</button>
+                                    <button class="btn btn-info btn-sm" onclick="downloadResult(1)">📤 导出</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>CALC202312001</td>
+                            <td>2023-12</td>
+                            <td>23</td>
+                            <td class="amount-positive">¥2,350,000</td>
+                            <td><span class="status-badge status-archived">已归档</span></td>
+                            <td>2023-12-20 15:45</td>
+                            <td>38秒</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewCalculationResult(2)">👁️ 查看结果</button>
+                                    <button class="btn btn-info btn-sm" onclick="downloadResult(2)">📤 导出</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 计算结果管理 -->
+            <div id="results" class="tab-content">
+                <div class="info-card">
+                    <h4>📊 计算结果管理说明</h4>
+                    <p>• 计算结果需要锁定后才能进行调整</p>
+                    <p>• 锁定后可以解除锁定重新计算</p>
+                    <p>• 归档后不可再进行任何修改</p>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="请输入期间或批次号">
+                        <select class="form-control" style="width: auto;">
+                            <option value="">全部状态</option>
+                            <option value="completed">计算完成</option>
+                            <option value="locked">已锁定</option>
+                            <option value="archived">已归档</option>
+                        </select>
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-warning" onclick="batchLock()">🔒 批量锁定</button>
+                        <button class="btn btn-danger" onclick="batchArchive()">📦 批量归档</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th width="50"><input type="checkbox" id="selectAllResults"></th>
+                            <th>计算批次</th>
+                            <th>计算期间</th>
+                            <th>门店数量</th>
+                            <th>股东数量</th>
+                            <th>分红总额</th>
+                            <th>状态</th>
+                            <th>最后更新</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="checkbox" value="1"></td>
+                            <td>CALC202401001</td>
+                            <td>2024-01</td>
+                            <td>25</td>
+                            <td>156</td>
+                            <td class="amount-positive">¥2,580,000</td>
+                            <td><span class="status-badge status-locked">已锁定</span></td>
+                            <td>2024-01-20 10:30</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewResultDetail(1)">👁️ 查看</button>
+                                    <button class="btn btn-warning btn-sm" onclick="unlockResult(1)">🔓 解锁</button>
+                                    <button class="btn btn-danger btn-sm" onclick="archiveResult(1)">📦 归档</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" value="2"></td>
+                            <td>CALC202312002</td>
+                            <td>2023-12</td>
+                            <td>23</td>
+                            <td>142</td>
+                            <td class="amount-positive">¥2,350,000</td>
+                            <td><span class="status-badge status-completed">计算完成</span></td>
+                            <td>2023-12-25 16:20</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewResultDetail(2)">👁️ 查看</button>
+                                    <button class="btn btn-success btn-sm" onclick="lockResult(2)">🔒 锁定</button>
+                                    <button class="btn btn-info btn-sm" onclick="recalculate(2)">🔄 重算</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" value="3"></td>
+                            <td>CALC202311001</td>
+                            <td>2023-11</td>
+                            <td>22</td>
+                            <td>138</td>
+                            <td class="amount-positive">¥2,180,000</td>
+                            <td><span class="status-badge status-archived">已归档</span></td>
+                            <td>2023-11-28 14:15</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewResultDetail(3)">👁️ 查看</button>
+                                    <button class="btn btn-info btn-sm" onclick="downloadResult(3)">📤 导出</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="page-btn">« 上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">下一页 »</button>
+                </div>
+            </div>
+
+            <!-- 分红结果调整 -->
+            <div id="adjustment" class="tab-content">
+                <div class="info-card">
+                    <h4>⚖️ 分红结果调整说明</h4>
+                    <p>• 只能对已锁定的计算结果进行调整</p>
+                    <p>• 调整需要提交审批流程</p>
+                    <p>• 支持按股东维度批量调整</p>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="请输入股东名称或调整单号">
+                        <select class="form-control" style="width: auto;">
+                            <option value="">全部状态</option>
+                            <option value="draft">草稿</option>
+                            <option value="pending">审批中</option>
+                            <option value="approved">已完成</option>
+                            <option value="rejected">已拒绝</option>
+                        </select>
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="openModal('adjustmentModal')">➕ 新增调整</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>调整单号</th>
+                            <th>计算期间</th>
+                            <th>调整股东</th>
+                            <th>调整门店数</th>
+                            <th>调整金额</th>
+                            <th>调整原因</th>
+                            <th>状态</th>
+                            <th>申请时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ADJ202401001</td>
+                            <td>2024-01</td>
+                            <td>张三</td>
+                            <td>2</td>
+                            <td class="amount-positive">+¥5,000</td>
+                            <td>业绩奖励</td>
+                            <td><span class="status-badge status-completed">已完成</span></td>
+                            <td>2024-01-21 09:30</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewAdjustmentDetail(1)">👁️ 查看</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>ADJ202401002</td>
+                            <td>2024-01</td>
+                            <td>李四</td>
+                            <td>1</td>
+                            <td class="amount-negative">-¥2,000</td>
+                            <td>违规扣减</td>
+                            <td><span class="status-badge status-pending">审批中</span></td>
+                            <td>2024-01-22 14:20</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewAdjustmentDetail(2)">👁️ 查看</button>
+                                    <button class="btn btn-warning btn-sm" onclick="editAdjustment(2)">✏️ 编辑</button>
+                                    <button class="btn btn-danger btn-sm" onclick="cancelAdjustment(2)">❌ 撤销</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>ADJ202312001</td>
+                            <td>2023-12</td>
+                            <td>王五</td>
+                            <td>3</td>
+                            <td class="amount-positive">+¥8,000</td>
+                            <td>年终奖励</td>
+                            <td><span class="status-badge status-completed">已完成</span></td>
+                            <td>2023-12-28 16:45</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewAdjustmentDetail(3)">👁️ 查看</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 计算结果详情模态框 -->
+    <div id="resultDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">计算结果详情</h3>
+                <button class="close" onclick="closeModal('resultDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="info-card">
+                    <h4>📊 计算批次信息</h4>
+                    <p><strong>批次号:</strong> CALC202401001</p>
+                    <p><strong>计算期间:</strong> 2024年1月</p>
+                    <p><strong>参与门店:</strong> 25个</p>
+                    <p><strong>分红总额:</strong> ¥2,580,000</p>
+                    <p><strong>计算时间:</strong> 2024-01-20 10:30</p>
+                    <p><strong>计算耗时:</strong> 45秒</p>
+                </div>
+                
+                <h4 style="margin-bottom: 15px;">股东分红明细（前10条）</h4>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>股东名称</th>
+                            <th>门店名称</th>
+                            <th>分红比例</th>
+                            <th>门店利润</th>
+                            <th>分红金额</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>张三</td>
+                            <td>朝阳门店</td>
+                            <td>30%</td>
+                            <td>¥23,000</td>
+                            <td class="amount-positive">¥6,900</td>
+                        </tr>
+                        <tr>
+                            <td>李四</td>
+                            <td>朝阳门店</td>
+                            <td>25%</td>
+                            <td>¥23,000</td>
+                            <td class="amount-positive">¥5,750</td>
+                        </tr>
+                        <tr>
+                            <td>ABC投资公司</td>
+                            <td>朝阳门店</td>
+                            <td>45%</td>
+                            <td>¥23,000</td>
+                            <td class="amount-positive">¥10,350</td>
+                        </tr>
+                        <tr>
+                            <td>张三</td>
+                            <td>海淀门店</td>
+                            <td>25%</td>
+                            <td>¥32,000</td>
+                            <td class="amount-positive">¥8,000</td>
+                        </tr>
+                        <tr>
+                            <td>李四</td>
+                            <td>海淀门店</td>
+                            <td>35%</td>
+                            <td>¥32,000</td>
+                            <td class="amount-positive">¥11,200</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('resultDetailModal')">关闭</button>
+                <button class="btn btn-info">📤 导出完整明细</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分红调整模态框 -->
+    <div id="adjustmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新增分红调整</h3>
+                <button class="close" onclick="closeModal('adjustmentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="adjustmentForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">计算期间</label>
+                            <select class="form-control" name="period">
+                                <option value="">请选择期间</option>
+                                <option value="2024-01">2024年1月</option>
+                                <option value="2023-12">2023年12月</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">调整股东</label>
+                            <select class="form-control" name="shareholder">
+                                <option value="">请选择股东</option>
+                                <option value="SH001">张三</option>
+                                <option value="SH002">李四</option>
+                                <option value="SH003">ABC投资公司</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">调整原因</label>
+                            <select class="form-control" name="reason">
+                                <option value="">请选择调整原因</option>
+                                <option value="bonus">业绩奖励</option>
+                                <option value="penalty">违规扣减</option>
+                                <option value="yearend">年终奖励</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">调整方式</label>
+                            <select class="form-control" name="adjustType">
+                                <option value="">请选择调整方式</option>
+                                <option value="amount">固定金额</option>
+                                <option value="ratio">比例调整</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">调整说明</label>
+                        <textarea class="form-control" name="description" rows="3" placeholder="请输入调整说明"></textarea>
+                    </div>
+                </form>
+                
+                <h4 style="margin-bottom: 15px;">门店调整明细</h4>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>门店名称</th>
+                            <th>原分红金额</th>
+                            <th>调整金额</th>
+                            <th>调整后金额</th>
+                            <th>备注</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adjustmentTableBody">
+                        <tr>
+                            <td>朝阳门店</td>
+                            <td class="amount-positive">¥6,900</td>
+                            <td><input type="number" class="form-control" step="0.01" placeholder="0.00"></td>
+                            <td class="amount-positive">¥6,900</td>
+                            <td><input type="text" class="form-control" placeholder="备注"></td>
+                        </tr>
+                        <tr>
+                            <td>海淀门店</td>
+                            <td class="amount-positive">¥8,000</td>
+                            <td><input type="number" class="form-control" step="0.01" placeholder="0.00"></td>
+                            <td class="amount-positive">¥8,000</td>
+                            <td><input type="text" class="form-control" placeholder="备注"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('adjustmentModal')">取消</button>
+                <button class="btn btn-warning" onclick="saveAdjustment(false)">保存草稿</button>
+                <button class="btn btn-primary" onclick="saveAdjustment(true)">提交审批</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 标签页切换
+        function switchTab(tabName) {
+            // 隐藏所有标签内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签按钮的激活状态
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 显示选中的标签内容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 激活对应的标签按钮
+            event.target.classList.add('active');
+        }
+
+        // 模态框操作
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // 分红计算操作
+        function startCalculation() {
+            if (confirm('确定要开始计算本期分红吗？计算过程中请勿关闭页面。')) {
+                const progressSection = document.getElementById('calculationProgress');
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                
+                progressSection.style.display = 'block';
+                
+                // 模拟计算进度
+                let progress = 0;
+                const steps = [
+                    '校验分红比例数据...',
+                    '加载利润数据...',
+                    '计算朝阳门店分红...',
+                    '计算海淀门店分红...',
+                    '计算西城门店分红...',
+                    '汇总计算结果...',
+                    '生成分红记录...',
+                    '计算完成！'
+                ];
+                
+                let stepIndex = 0;
+                const interval = setInterval(() => {
+                    progress += 12.5;
+                    if (progress > 100) progress = 100;
+                    
+                    progressFill.style.width = progress + '%';
+                    progressText.textContent = steps[stepIndex] || '计算完成！';
+                    stepIndex++;
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            alert('分红计算完成！共生成156条分红记录。');
+                            location.reload();
+                        }, 1000);
+                    }
+                }, 800);
+            }
+        }
+
+        function previewCalculation() {
+            alert('预览计算结果（不保存）');
+        }
+
+        function viewCalculationResult(id) {
+            openModal('resultDetailModal');
+        }
+
+        function downloadResult(id) {
+            alert('导出计算结果...');
+        }
+
+        // 计算结果管理
+        function viewResultDetail(id) {
+            openModal('resultDetailModal');
+        }
+
+        function lockResult(id) {
+            if (confirm('确定要锁定该计算结果吗？锁定后才能进行调整。')) {
+                alert('锁定成功！');
+                location.reload();
+            }
+        }
+
+        function unlockResult(id) {
+            if (confirm('确定要解除锁定吗？解锁后可以重新计算。')) {
+                alert('解锁成功！');
+                location.reload();
+            }
+        }
+
+        function archiveResult(id) {
+            if (confirm('确定要归档该计算结果吗？归档后不可再修改！')) {
+                alert('归档成功！');
+                location.reload();
+            }
+        }
+
+        function recalculate(id) {
+            if (confirm('确定要重新计算吗？这将覆盖现有结果！')) {
+                alert('重新计算中...');
+                startCalculation();
+            }
+        }
+
+        // 批量操作
+        function batchLock() {
+            const selected = document.querySelectorAll('#results tbody input[type="checkbox"]:checked');
+            if (selected.length === 0) {
+                alert('请至少选择一个结果！');
+                return;
+            }
+            
+            if (confirm(`确定要批量锁定选中的 ${selected.length} 个结果吗？`)) {
+                alert('批量锁定成功！');
+                location.reload();
+            }
+        }
+
+        function batchArchive() {
+            const selected = document.querySelectorAll('#results tbody input[type="checkbox"]:checked');
+            if (selected.length === 0) {
+                alert('请至少选择一个结果！');
+                return;
+            }
+            
+            if (confirm(`确定要批量归档选中的 ${selected.length} 个结果吗？归档后不可修改！`)) {
+                alert('批量归档成功！');
+                location.reload();
+            }
+        }
+
+        // 分红调整操作
+        function viewAdjustmentDetail(id) {
+            alert('查看调整详情');
+        }
+
+        function editAdjustment(id) {
+            document.querySelector('#adjustmentModal .modal-title').textContent = '编辑分红调整';
+            openModal('adjustmentModal');
+        }
+
+        function cancelAdjustment(id) {
+            if (confirm('确定要撤销该调整申请吗？')) {
+                alert('撤销成功！');
+                location.reload();
+            }
+        }
+
+        function saveAdjustment(submit) {
+            const action = submit ? '提交审批' : '保存草稿';
+            alert(`${action}成功！`);
+            closeModal('adjustmentModal');
+            location.reload();
+        }
+
+        // 全选功能
+        document.getElementById('selectAllResults').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('#results tbody input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+
+        // 调整金额自动计算
+        document.addEventListener('input', function(e) {
+            if (e.target.type === 'number' && e.target.closest('#adjustmentTableBody')) {
+                const row = e.target.closest('tr');
+                const originalAmount = parseFloat(row.cells[1].textContent.replace(/[¥,]/g, '')) || 0;
+                const adjustAmount = parseFloat(e.target.value) || 0;
+                const newAmount = originalAmount + adjustAmount;
+                
+                const newAmountCell = row.cells[3];
+                newAmountCell.textContent = '¥' + newAmount.toLocaleString();
+                newAmountCell.className = newAmount >= 0 ? 'amount-positive' : 'amount-negative';
+            }
+        });
+
+        // 点击模态框外部关闭
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

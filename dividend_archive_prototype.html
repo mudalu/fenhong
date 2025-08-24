@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分红档案管理 - 分红系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .breadcrumb {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .tab-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .tab-nav {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab-btn.active {
+            color: #007bff;
+            background: white;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #007bff;
+        }
+
+        .tab-content {
+            padding: 20px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-archived {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: #dc3545;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            background: white;
+            color: #007bff;
+            cursor: pointer;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .page-btn:hover {
+            background: #e9ecef;
+        }
+
+        .page-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .select-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .select-icon {
+            font-size: 48px;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .info-card {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-card h4 {
+            color: #0056b3;
+            margin-bottom: 10px;
+        }
+
+        .info-card p {
+            color: #495057;
+            margin: 5px 0;
+        }
+
+        .warning-card {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .warning-card h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .warning-card p {
+            color: #856404;
+            margin: 5px 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                justify-content: stretch;
+            }
+            
+            .search-input {
+                min-width: auto;
+            }
+            
+            .data-table {
+                font-size: 12px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>分红档案管理</h1>
+            <div class="breadcrumb">分红系统 > 分红档案管理</div>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('category')">分红大类管理</button>
+                <button class="tab-btn" onclick="switchTab('store')">分红门店管理</button>
+                <button class="tab-btn" onclick="switchTab('shareholder')">分红股东管理</button>
+            </div>
+
+            <!-- 分红大类管理 -->
+            <div id="category" class="tab-content active">
+                <div class="info-card">
+                    <h4>📋 分红大类管理说明</h4>
+                    <p>• 分红大类可以手工维护或从公司档案中选择</p>
+                    <p>• 大类名称必须唯一，启用后不可修改</p>
+                    <p>• 停用归档后不可再次启用</p>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="请输入大类名称">
+                        <select class="form-control" style="width: auto;">
+                            <option value="">全部状态</option>
+                            <option value="active">启用</option>
+                            <option value="inactive">停用</option>
+                            <option value="archived">停用归档</option>
+                        </select>
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="openModal('categoryModal')">➕ 新增大类</button>
+                        <button class="btn btn-info" onclick="openModal('selectCompanyModal')">🏢 从公司选择</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>大类编码</th>
+                            <th>大类名称</th>
+                            <th>维护方式</th>
+                            <th>关联公司</th>
+                            <th>系统来源</th>
+                            <th>股权类型</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CAT001</td>
+                            <td>餐饮分红</td>
+                            <td>手工维护</td>
+                            <td>-</td>
+                            <td>手工录入</td>
+                            <td><span class="status-badge status-active">实股</span></td>
+                            <td><span class="status-badge status-active">启用</span></td>
+                            <td>2024-01-15</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="editCategory(1)">✏️ 编辑</button>
+                                    <button class="btn btn-warning btn-sm" onclick="toggleCategoryStatus(1)">⏸️ 停用</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteCategory(1)">🗑️ 删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>CAT002</td>
+                            <td>零售分红</td>
+                            <td>公司选择</td>
+                            <td>北京总公司</td>
+                            <td>系统导入</td>
+                            <td><span class="status-badge status-inactive">虚股</span></td>
+                            <td><span class="status-badge status-active">启用</span></td>
+                            <td>2024-01-16</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewCategory(2)">👁️ 查看</button>
+                                    <button class="btn btn-warning btn-sm" onclick="toggleCategoryStatus(2)">⏸️ 停用</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>CAT003</td>
+                            <td>物流分红</td>
+                            <td>手工维护</td>
+                            <td>-</td>
+                            <td>手工录入</td>
+                            <td><span class="status-badge status-active">实股</span></td>
+                            <td><span class="status-badge status-archived">停用归档</span></td>
+                            <td>2024-01-17</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewCategory(3)">👁️ 查看</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="page-btn">« 上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">下一页 »</button>
+                </div>
+            </div>
+
+            <!-- 分红门店管理 -->
+            <div id="store" class="tab-content">
+                <div class="info-card">
+                    <h4>🏪 分红门店管理说明</h4>
+                    <p>• 分红门店从公司档案中选择</p>
+                    <p>• 只有启用的门店才能参与分红比例管理</p>
+                    <p>• 停用分红后不可再次启用，所有关联比例将被冻结</p>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="请输入门店名称或编码">
+                        <select class="form-control" style="width: auto;">
+                            <option value="">全部状态</option>
+                            <option value="dividend_active">启用分红</option>
+                            <option value="dividend_stopped">停用分红</option>
+                        </select>
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="openModal('selectStoreModal')">🏢 选择门店</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>门店编码</th>
+                            <th>门店名称</th>
+                            <th>门店类型</th>
+                            <th>负责人</th>
+                            <th>状态</th>
+                            <th>添加时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>STORE001</td>
+                            <td>朝阳门店</td>
+                            <td>直营店</td>
+                            <td>张三</td>
+                            <td><span class="status-badge status-active">启用分红</span></td>
+                            <td>2024-01-15</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="editStore(1)">✏️ 编辑</button>
+                                    <button class="btn btn-warning btn-sm" onclick="toggleStoreStatus(1)">⏸️ 停用</button>
+                                    <button class="btn btn-danger btn-sm" onclick="stopDividend(1)">🚫 停用分红</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>STORE002</td>
+                            <td>海淀门店</td>
+                            <td>加盟店</td>
+                            <td>李四</td>
+                            <td><span class="status-badge status-active">启用分红</span></td>
+                            <td>2024-01-16</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="editStore(2)">✏️ 编辑</button>
+                                    <button class="btn btn-warning btn-sm" onclick="toggleStoreStatus(2)">⏸️ 停用</button>
+                                    <button class="btn btn-danger btn-sm" onclick="stopDividend(2)">🚫 停用分红</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>STORE003</td>
+                            <td>西城门店</td>
+                            <td>直营店</td>
+                            <td>王五</td>
+                            <td><span class="status-badge status-inactive">停用分红</span></td>
+                            <td>2024-01-17</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewStore(3)">👁️ 查看</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="page-btn">« 上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">下一页 »</button>
+                </div>
+            </div>
+
+            <!-- 分红股东管理 -->
+            <div id="shareholder" class="tab-content">
+                <div class="info-card">
+                    <h4>👥 分红股东管理说明</h4>
+                    <p>• 分红股东从股东档案中选择</p>
+                    <p>• 只有启用的股东才能参与分红比例配置</p>
+                    <p>• 股东唯一标识不能重复</p>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="请输入股东名称或编码">
+                        <select class="form-control" style="width: auto;">
+                            <option value="">全部类型</option>
+                            <option value="individual">自然人</option>
+                            <option value="company">法人公司</option>
+                            <option value="partnership">合伙企业</option>
+                        </select>
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="openModal('selectShareholderModal')">👥 选择股东</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>股东编码</th>
+                            <th>股东名称</th>
+                            <th>股东类型</th>
+                            <th>证件号码</th>
+                            <th>联系电话</th>
+                            <th>状态</th>
+                            <th>添加时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>DSH001</td>
+                            <td>张三</td>
+                            <td>自然人</td>
+                            <td>110101199001011234</td>
+                            <td>13800138000</td>
+                            <td><span class="status-badge status-active">启用</span></td>
+                            <td>2024-01-15</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewDividendShareholder(1)">👁️ 查看</button>
+                                    <button class="btn btn-warning btn-sm" onclick="toggleDividendShareholderStatus(1)">⏸️ 停用</button>
+                                    <button class="btn btn-danger btn-sm" onclick="removeDividendShareholder(1)">🗑️ 移除</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>DSH002</td>
+                            <td>ABC投资公司</td>
+                            <td>法人公司</td>
+                            <td>91110000123456789X</td>
+                            <td>010-12345678</td>
+                            <td><span class="status-badge status-active">启用</span></td>
+                            <td>2024-01-16</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewDividendShareholder(2)">👁️ 查看</button>
+                                    <button class="btn btn-warning btn-sm" onclick="toggleDividendShareholderStatus(2)">⏸️ 停用</button>
+                                    <button class="btn btn-danger btn-sm" onclick="removeDividendShareholder(2)">🗑️ 移除</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>DSH003</td>
+                            <td>李四</td>
+                            <td>自然人</td>
+                            <td>110101199002021234</td>
+                            <td>13900139000</td>
+                            <td><span class="status-badge status-inactive">停用</span></td>
+                            <td>2024-01-17</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewDividendShareholder(3)">👁️ 查看</button>
+                                    <button class="btn btn-success btn-sm" onclick="toggleDividendShareholderStatus(3)">▶️ 启用</button>
+                                    <button class="btn btn-danger btn-sm" onclick="removeDividendShareholder(3)">🗑️ 移除</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="page-btn">« 上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">下一页 »</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分红大类模态框 -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新增分红大类</h3>
+                <button class="close" onclick="closeModal('categoryModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm">
+                    <div class="form-group">
+                        <label class="form-label required">大类编码</label>
+                        <input type="text" class="form-control" name="categoryCode" placeholder="请输入大类编码">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">大类名称</label>
+                        <input type="text" class="form-control" name="categoryName" placeholder="请输入大类名称">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">系统来源</label>
+                            <select class="form-control" name="systemSource">
+                                <option value="">请选择系统来源</option>
+                                <option value="manual">手工录入</option>
+                                <option value="system">系统导入</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">股权类型</label>
+                            <select class="form-control" name="stockType">
+                                <option value="">请选择股权类型</option>
+                                <option value="real">实股</option>
+                                <option value="virtual">虚股</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">描述</label>
+                        <textarea class="form-control" name="description" rows="3" placeholder="请输入大类描述"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('categoryModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveCategory()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 选择公司模态框 -->
+    <div id="selectCompanyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">从公司档案选择</h3>
+                <button class="close" onclick="closeModal('selectCompanyModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-box" style="margin-bottom: 20px;">
+                    <input type="text" class="search-input" placeholder="搜索公司名称">
+                    <button class="btn btn-primary">🔍 搜索</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th width="50">选择</th>
+                            <th>公司编码</th>
+                            <th>公司名称</th>
+                            <th>公司类型</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="checkbox" value="COMP001"></td>
+                            <td>COMP001</td>
+                            <td>北京总公司</td>
+                            <td>总公司</td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" value="COMP002"></td>
+                            <td>COMP002</td>
+                            <td>上海分公司</td>
+                            <td>分公司</td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" value="COMP003"></td>
+                            <td>COMP003</td>
+                            <td>深圳子公司</td>
+                            <td>子公司</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('selectCompanyModal')">取消</button>
+                <button class="btn btn-primary" onclick="addFromCompany()">确定添加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 选择门店模态框 -->
+    <div id="selectStoreModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">选择分红门店</h3>
+                <button class="close" onclick="closeModal('selectStoreModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="warning-card">
+                    <h4>⚠️ 注意事项</h4>
+                    <p>• 只能选择已启用的公司档案</p>
+
+                </div>
+                <div class="search-box" style="margin-bottom: 20px;">
+                    <input type="text" class="search-input" placeholder="搜索门店名称">
+
+                    <button class="btn btn-primary">🔍 搜索</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th width="50">选择</th>
+                            <th>公司编码</th>
+                            <th>公司名称</th>
+                            <th>公司类型</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="checkbox" value="COMP004"></td>
+                            <td>COMP004</td>
+                            <td>朝阳门店</td>
+                            <td>直营店</td>
+
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" value="COMP005"></td>
+                            <td>COMP005</td>
+                            <td>海淀门店</td>
+                            <td>加盟店</td>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('selectStoreModal')">取消</button>
+                <button class="btn btn-primary" onclick="addStores()">确定添加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 选择股东模态框 -->
+    <div id="selectShareholderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">选择分红股东</h3>
+                <button class="close" onclick="closeModal('selectShareholderModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="warning-card">
+                    <h4>⚠️ 注意事项</h4>
+                    <p>• 只能选择已启用的股东档案</p>
+                    <p>• 已添加的股东不会显示在列表中</p>
+                </div>
+                <div class="search-box" style="margin-bottom: 20px;">
+                    <input type="text" class="search-input" placeholder="搜索股东名称">
+                    <select class="form-control" style="width: auto;">
+                        <option value="">全部类型</option>
+                        <option value="individual">自然人</option>
+                        <option value="company">法人公司</option>
+                        <option value="partnership">合伙企业</option>
+                    </select>
+                    <button class="btn btn-primary">🔍 搜索</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th width="50">选择</th>
+                            <th>股东编码</th>
+                            <th>股东名称</th>
+                            <th>股东类型</th>
+                            <th>证件号码</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="checkbox" value="SH004"></td>
+                            <td>SH004</td>
+                            <td>王五</td>
+                            <td>自然人</td>
+                            <td>110101199003031234</td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" value="SH005"></td>
+                            <td>SH005</td>
+                            <td>XYZ控股公司</td>
+                            <td>法人公司</td>
+                            <td>91110000987654321Y</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('selectShareholderModal')">取消</button>
+                <button class="btn btn-primary" onclick="addShareholders()">确定添加</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 标签页切换
+        function switchTab(tabName) {
+            // 隐藏所有标签内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签按钮的激活状态
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 显示选中的标签内容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 激活对应的标签按钮
+            event.target.classList.add('active');
+        }
+
+        // 模态框操作
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // 分红大类操作
+        function editCategory(id) {
+            document.querySelector('#categoryModal .modal-title').textContent = '编辑分红大类';
+            openModal('categoryModal');
+        }
+
+        function saveCategory() {
+            alert('分红大类保存成功！');
+            closeModal('categoryModal');
+        }
+
+        function toggleCategoryStatus(id) {
+            if (confirm('确定要改变该分红大类的状态吗？')) {
+                alert('状态修改成功！');
+            }
+        }
+
+        function deleteCategory(id) {
+            if (confirm('确定要删除该分红大类吗？此操作不可恢复！')) {
+                alert('删除成功！');
+            }
+        }
+
+        function viewCategory(id) {
+            alert('查看分红大类详情（只读模式）');
+        }
+
+        function addFromCompany() {
+            const selected = document.querySelectorAll('#selectCompanyModal input[type="checkbox"]:checked');
+            if (selected.length === 0) {
+                alert('请至少选择一个公司！');
+                return;
+            }
+            alert(`成功添加 ${selected.length} 个分红大类！`);
+            closeModal('selectCompanyModal');
+        }
+
+        // 分红门店操作
+        function editStore(id) {
+            alert('编辑分红门店信息');
+        }
+
+        function toggleStoreStatus(id) {
+            if (confirm('确定要改变该门店的状态吗？')) {
+                alert('状态修改成功！');
+            }
+        }
+
+        function stopDividend(id) {
+            if (confirm('确定要停用该门店的分红功能吗？此操作不可恢复，所有关联的分红比例将被冻结！')) {
+                alert('分红功能已停用！');
+            }
+        }
+
+        function viewStore(id) {
+            alert('查看门店详情（只读模式）');
+        }
+
+        function addStores() {
+            const selected = document.querySelectorAll('#selectStoreModal input[type="checkbox"]:checked');
+            if (selected.length === 0) {
+                alert('请至少选择一个门店！');
+                return;
+            }
+            
+
+            
+            alert(`成功添加 ${selected.length} 个分红门店！`);
+            closeModal('selectStoreModal');
+        }
+
+        // 分红股东操作
+        function viewDividendShareholder(id) {
+            alert('查看分红股东详情');
+        }
+
+        function toggleDividendShareholderStatus(id) {
+            if (confirm('确定要改变该股东的状态吗？')) {
+                alert('状态修改成功！');
+            }
+        }
+
+        function removeDividendShareholder(id) {
+            if (confirm('确定要从分红股东中移除吗？')) {
+                alert('移除成功！');
+            }
+        }
+
+        function addShareholders() {
+            const selected = document.querySelectorAll('#selectShareholderModal input[type="checkbox"]:checked');
+            if (selected.length === 0) {
+                alert('请至少选择一个股东！');
+                return;
+            }
+            alert(`成功添加 ${selected.length} 个分红股东！`);
+            closeModal('selectShareholderModal');
+        }
+
+        // 点击模态框外部关闭
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

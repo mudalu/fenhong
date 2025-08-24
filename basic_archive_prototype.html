@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基础档案管理 - 分红系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .breadcrumb {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .tab-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .tab-nav {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab-btn.active {
+            color: #007bff;
+            background: white;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #007bff;
+        }
+
+        .tab-content {
+            padding: 20px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-archived {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: #dc3545;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            background: white;
+            color: #007bff;
+            cursor: pointer;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .page-btn:hover {
+            background: #e9ecef;
+        }
+
+        .page-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .import-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .import-icon {
+            font-size: 48px;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .file-label:hover {
+            background: #0056b3;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                justify-content: stretch;
+            }
+            
+            .search-input {
+                min-width: auto;
+            }
+            
+            .data-table {
+                font-size: 12px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>基础档案管理</h1>
+            <div class="breadcrumb">分红系统 > 基础档案管理</div>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('company')">公司档案管理</button>
+                <button class="tab-btn" onclick="switchTab('shareholder')">股东档案管理</button>
+            </div>
+
+            <!-- 公司档案管理 -->
+            <div id="company" class="tab-content active">
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="请输入公司名称或编码">
+                        <select class="form-control" style="width: auto;">
+                            <option value="">全部状态</option>
+                            <option value="active">启用</option>
+                            <option value="inactive">停用</option>
+                        </select>
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="openModal('companyModal')">➕ 新增公司</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>公司编码</th>
+                            <th>公司名称</th>
+                            <th>公司类型</th>
+                            <th>联系人</th>
+                            <th>联系电话</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>COMP001</td>
+                            <td>北京总公司</td>
+                            <td>总公司</td>
+                            <td>张三</td>
+                            <td>13800138000</td>
+                            <td><span class="status-badge status-active">启用</span></td>
+                            <td>2024-01-15</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="editCompany(1)">✏️ 编辑</button>
+                                    <button class="btn btn-warning btn-sm" onclick="toggleStatus(1)">⏸️ 停用</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteCompany(1)">🗑️ 删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>COMP002</td>
+                            <td>上海分公司</td>
+                            <td>分公司</td>
+                            <td>李四</td>
+                            <td>13900139000</td>
+                            <td><span class="status-badge status-active">启用</span></td>
+                            <td>2024-01-16</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="editCompany(2)">✏️ 编辑</button>
+                                    <button class="btn btn-warning btn-sm" onclick="toggleStatus(2)">⏸️ 停用</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteCompany(2)">🗑️ 删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>COMP003</td>
+                            <td>深圳子公司</td>
+                            <td>子公司</td>
+                            <td>王五</td>
+                            <td>13700137000</td>
+                            <td><span class="status-badge status-inactive">停用</span></td>
+                            <td>2024-01-17</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="editCompany(3)">✏️ 编辑</button>
+                                    <button class="btn btn-success btn-sm" onclick="toggleStatus(3)">▶️ 启用</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteCompany(3)">🗑️ 删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="page-btn">« 上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">下一页 »</button>
+                </div>
+            </div>
+
+            <!-- 股东档案管理 -->
+            <div id="shareholder" class="tab-content">
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="请输入股东名称或证件号">
+                        <select class="form-control" style="width: auto;">
+                            <option value="">全部类型</option>
+                            <option value="individual">自然人</option>
+                            <option value="company">法人公司</option>
+                            <option value="partnership">合伙企业</option>
+                        </select>
+                        <select class="form-control" style="width: auto;">
+                            <option value="">全部状态</option>
+                            <option value="active">启用</option>
+                            <option value="inactive">停用</option>
+                            <option value="archived">停用归档</option>
+                        </select>
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="openModal('shareholderModal')">➕ 新增股东</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>股东编码</th>
+                            <th>股东名称</th>
+                            <th>股东类型</th>
+                            <th>证件类型</th>
+                            <th>证件号码</th>
+                            <th>联系电话</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SH001</td>
+                            <td>张三</td>
+                            <td>自然人</td>
+                            <td>身份证</td>
+                            <td>110101199001011234</td>
+                            <td>13800138000</td>
+                            <td><span class="status-badge status-active">启用</span></td>
+                            <td>2024-01-15</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="editShareholder(1)">✏️ 编辑</button>
+                                    <button class="btn btn-warning btn-sm" onclick="toggleShareholderStatus(1)">⏸️ 停用</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteShareholder(1)">🗑️ 删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>SH002</td>
+                            <td>ABC投资公司</td>
+                            <td>法人公司</td>
+                            <td>统一社会信用代码</td>
+                            <td>91110000123456789X</td>
+                            <td>010-12345678</td>
+                            <td><span class="status-badge status-active">启用</span></td>
+                            <td>2024-01-16</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="editShareholder(2)">✏️ 编辑</button>
+                                    <button class="btn btn-warning btn-sm" onclick="toggleShareholderStatus(2)">⏸️ 停用</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteShareholder(2)">🗑️ 删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>SH003</td>
+                            <td>李四</td>
+                            <td>自然人</td>
+                            <td>身份证</td>
+                            <td>110101199002021234</td>
+                            <td>13900139000</td>
+                            <td><span class="status-badge status-archived">停用归档</span></td>
+                            <td>2024-01-17</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewShareholder(3)">👁️ 查看</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="page-btn">« 上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">下一页 »</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 公司档案模态框 -->
+    <div id="companyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新增公司档案</h3>
+                <button class="close" onclick="closeModal('companyModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="companyForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">公司编码</label>
+                            <input type="text" class="form-control" name="companyCode" placeholder="请输入公司编码">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">公司名称</label>
+                            <input type="text" class="form-control" name="companyName" placeholder="请输入公司名称">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">公司类型</label>
+                            <select class="form-control" name="companyType">
+                                <option value="">请选择公司类型</option>
+                                <option value="headquarters">总公司</option>
+                                <option value="branch">分公司</option>
+                                <option value="subsidiary">子公司</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">统一社会信用代码</label>
+                            <input type="text" class="form-control" name="creditCode" placeholder="请输入统一社会信用代码">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">联系人</label>
+                            <input type="text" class="form-control" name="contactPerson" placeholder="请输入联系人">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">联系电话</label>
+                            <input type="text" class="form-control" name="contactPhone" placeholder="请输入联系电话">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">公司地址</label>
+                        <input type="text" class="form-control" name="address" placeholder="请输入公司地址">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">备注</label>
+                        <textarea class="form-control" name="remark" rows="3" placeholder="请输入备注信息"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('companyModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveCompany()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 股东档案模态框 -->
+    <div id="shareholderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">创建</h3>
+                <button class="close" onclick="closeModal('shareholderModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="shareholderForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">是否来源系统</label>
+                            <select class="form-control" name="sourceSystem">
+                                <option value="">来源系统</option>
+                                <option value="manual">手工录入</option>
+                                <option value="system">系统导入</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">投资人属性</label>
+                            <select class="form-control" name="investorType">
+                                <option value="">自然人</option>
+                                <option value="individual">自然人</option>
+                                <option value="company">法人公司</option>
+                                <option value="partnership">合伙企业</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">系统来源</label>
+                            <select class="form-control" name="systemSource">
+                                <option value="">系统用户</option>
+                                <option value="internal">内部系统</option>
+                                <option value="external">外部系统</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">投资人名称</label>
+                            <input type="text" class="form-control" name="investorName" placeholder="请输入投资人名称">
+                            <small style="color: #dc3545;">⚠️ 投资人名称不能为空</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">身份证号</label>
+                        <input type="text" class="form-control" name="idNumber" placeholder="请输入身份证号">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">投资人第二名称</label>
+                        <input type="text" class="form-control" name="secondName" placeholder="请输入投资人第二名称">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">投资说明</label>
+                        <textarea class="form-control" name="investmentDescription" rows="3" placeholder="请输入投资说明"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="saveShareholder()">立即创建</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量导入模态框 -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">批量导入</h3>
+                <button class="close" onclick="closeModal('importModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="import-section">
+                    <div class="import-icon">📁</div>
+                    <h4>选择导入文件</h4>
+                    <p>支持 Excel 格式文件，请先下载模板填写数据</p>
+                    <input type="file" id="importFile" class="file-input" accept=".xlsx,.xls">
+                    <label for="importFile" class="file-label">选择文件</label>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-secondary">📤 下载模板</button>
+                    </div>
+                </div>
+                <div id="importResult" style="display: none;">
+                    <h5>导入结果</h5>
+                    <div class="alert alert-success">
+                        ✅ 成功导入 5 条记录
+                    </div>
+                    <div class="alert alert-warning">
+                        ⚠️ 跳过 2 条重复记录
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('importModal')">取消</button>
+                <button class="btn btn-primary" onclick="startImport()">开始导入</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 标签页切换
+        function switchTab(tabName) {
+            // 隐藏所有标签内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签按钮的激活状态
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 显示选中的标签内容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 激活对应的标签按钮
+            event.target.classList.add('active');
+        }
+
+        // 模态框操作
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function openImportModal() {
+            openModal('importModal');
+        }
+
+        // 公司档案操作
+        function editCompany(id) {
+            // 模拟编辑操作
+            document.querySelector('#companyModal .modal-title').textContent = '编辑公司档案';
+            openModal('companyModal');
+            // 这里应该加载公司数据到表单
+        }
+
+        function saveCompany() {
+            // 模拟保存操作
+            alert('公司档案保存成功！');
+            closeModal('companyModal');
+        }
+
+        function toggleStatus(id) {
+            if (confirm('确定要改变该公司的状态吗？')) {
+                alert('状态修改成功！');
+                // 这里应该发送请求更新状态
+            }
+        }
+
+        function deleteCompany(id) {
+            if (confirm('确定要删除该公司档案吗？此操作不可恢复！')) {
+                alert('删除成功！');
+                // 这里应该发送删除请求
+            }
+        }
+
+        // 股东档案操作
+        function editShareholder(id) {
+            document.querySelector('#shareholderModal .modal-title').textContent = '编辑股东档案';
+            openModal('shareholderModal');
+        }
+
+        function saveShareholder() {
+            alert('股东档案保存成功！');
+            closeModal('shareholderModal');
+        }
+
+        function toggleShareholderStatus(id) {
+            if (confirm('确定要改变该股东的状态吗？')) {
+                alert('状态修改成功！');
+            }
+        }
+
+        function deleteShareholder(id) {
+            if (confirm('确定要删除该股东档案吗？此操作不可恢复！')) {
+                alert('删除成功！');
+            }
+        }
+
+        function viewShareholder(id) {
+            alert('查看股东详情（只读模式）');
+        }
+
+        // 股东类型切换时的字段显示控制
+        function toggleShareholderFields() {
+            const type = document.querySelector('select[name="shareholderType"]').value;
+            const idTypeSelect = document.querySelector('select[name="idType"]');
+            
+            // 清空证件类型选项
+            idTypeSelect.innerHTML = '<option value="">请选择证件类型</option>';
+            
+            if (type === 'individual') {
+                idTypeSelect.innerHTML += '<option value="idcard">身份证</option><option value="passport">护照</option>';
+            } else if (type === 'company' || type === 'partnership') {
+                idTypeSelect.innerHTML += '<option value="creditcode">统一社会信用代码</option><option value="businesslicense">营业执照</option>';
+            }
+        }
+
+        // 导入操作
+        function startImport() {
+            const fileInput = document.getElementById('importFile');
+            if (!fileInput.files.length) {
+                alert('请先选择要导入的文件！');
+                return;
+            }
+            
+            // 模拟导入过程
+            alert('导入成功！');
+            document.getElementById('importResult').style.display = 'block';
+        }
+
+        // 点击模态框外部关闭
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

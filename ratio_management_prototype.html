@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分红比例管理 - 分红系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .breadcrumb {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .tab-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .tab-nav {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            position: relative;
+            white-space: nowrap;
+            min-width: 150px;
+        }
+
+        .tab-btn:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab-btn.active {
+            color: #007bff;
+            background: white;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #007bff;
+        }
+
+        .tab-content {
+            padding: 20px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: #dc3545;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            background: white;
+            color: #007bff;
+            cursor: pointer;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .page-btn:hover {
+            background: #e9ecef;
+        }
+
+        .page-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .info-card {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-card h4 {
+            color: #0056b3;
+            margin-bottom: 10px;
+        }
+
+        .info-card p {
+            color: #495057;
+            margin: 5px 0;
+        }
+
+        .warning-card {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .warning-card h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .warning-card p {
+            color: #856404;
+            margin: 5px 0;
+        }
+
+        .ratio-summary {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .ratio-summary h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .ratio-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .ratio-item:last-child {
+            border-bottom: none;
+        }
+
+        .ratio-name {
+            font-weight: 500;
+        }
+
+        .ratio-value {
+            font-weight: 600;
+            color: #007bff;
+        }
+
+        .ratio-total {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .adjustment-form {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .adjustment-table {
+            margin-top: 20px;
+        }
+
+        .adjustment-table input {
+            width: 80px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                justify-content: stretch;
+            }
+            
+            .search-input {
+                min-width: auto;
+            }
+            
+            .data-table {
+                font-size: 12px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .tab-nav {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>分红比例管理</h1>
+            <div class="breadcrumb">分红系统 > 分红比例管理</div>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('store-ratio')">门店分红比例管理</button>
+                <button class="tab-btn" onclick="switchTab('add-shareholder')">门店新增分红股东</button>
+                <button class="tab-btn" onclick="switchTab('shareholder-adjust')">股东比例调整</button>
+                <button class="tab-btn" onclick="switchTab('store-adjust')">门店比例调整</button>
+                <button class="tab-btn" onclick="switchTab('ratio-trace')">比例调整追溯</button>
+            </div>
+
+            <!-- 门店分红比例管理 -->
+            <div id="store-ratio" class="tab-content active">
+                <div class="info-card">
+                    <h4>📊 门店分红比例管理说明</h4>
+                    <p>• 以门店维度维护参与分红的股东及其分红比例</p>
+                    <p>• 分红比例总和必须为100%才能启用</p>
+                    <p>• 启用后将写入分红比例档案</p>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="请输入门店名称">
+                        <select class="form-control" style="width: auto;">
+                            <option value="">全部状态</option>
+                            <option value="draft">草稿</option>
+                            <option value="active">已启用</option>
+                        </select>
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="openModal('storeRatioModal')">➕ 新增门店比例</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                            <tr>
+                                <th>门店编码</th>
+                                <th>门店名称</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                    <tbody>
+                        <tr>
+                                <td>STORE001</td>
+                                <td>朝阳门店</td>
+                                <td><span class="status-badge status-active">已启用</span></td>
+                                <td>2024-01-15</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-primary btn-sm" onclick="viewStoreRatio(1)">👁️ 查看</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <tr>
+                                <td>STORE002</td>
+                                <td>海淀门店</td>
+                                <td><span class="status-badge status-pending">草稿</span></td>
+                                <td>2024-01-16</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-primary btn-sm" onclick="editStoreRatio(2)">✏️ 编辑</button>
+                                        <button class="btn btn-success btn-sm" onclick="enableStoreRatio(2)">✅ 启用</button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteStoreRatio(2)">🗑️ 删除</button>
+                                    </div>
+                                </td>
+                            </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="page-btn">« 上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">下一页 »</button>
+                </div>
+            </div>
+
+            <!-- 门店新增分红股东 -->
+            <div id="add-shareholder" class="tab-content">
+                <div class="info-card">
+                    <h4>👥 门店新增分红股东说明</h4>
+                    <p>• 对已生效的分红比例档案新增分红股东</p>
+                    <p>• 新增股东的分红比例初始为0</p>
+                    <p>• 需在股东比例调整模块进行后续调整</p>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="请输入门店名称">
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>门店编码</th>
+                            <th>门店名称</th>
+                            <th>开店时间</th>
+                            <th>启用年月</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>STORE001</td>
+                            <td>朝阳门店</td>
+                            <td>2024-01-15</td>
+                            <td>2024-04</td>
+                            <td><span class="status-badge status-active">已启用</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewStoreShareholderDetail('STORE001', '朝阳门店', '2024-01-15', '2024-04')">👁️ 查看</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>STORE002</td>
+                            <td>海淀门店</td>
+                            <td>2024-01-16</td>
+                            <td>2024-04</td>
+                            <td><span class="status-badge status-active">已启用</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewStoreShareholderDetail('STORE002', '海淀门店', '2024-01-16', '2024-04')">👁️ 查看</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 门店分红股东详情 -->
+            <div id="store-shareholder-detail" class="tab-content" style="display: none;">
+                <div class="info-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <button class="btn btn-secondary" onclick="backToStoreList()">← 返回门店列表</button>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">分红门店</label>
+                            <input type="text" class="form-control" id="currentStoreName" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">开店时间</label>
+                            <input type="text" class="form-control" id="currentOpenDate" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">启用年月</label>
+                            <input type="text" class="form-control" id="currentEnableMonth" readonly>
+                        </div>
+                    </div>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>分红股东</th>
+                            <th>分红大类</th>
+                            <th>股权信息</th>
+                            <th>分红比例</th>
+                            <th>启用年月</th>
+                            <th>是否有效</th>
+                            <th>使用年月</th>
+                        </tr>
+                    </thead>
+                    <tbody id="storeShareholderDetailTable">
+                        <tr>
+                            <td>青岛白民营销有限责任公司品牌有限公司</td>
+                            <td>白酒营销</td>
+                            <td>实股</td>
+                            <td>0.02</td>
+                            <td>2025-04-12</td>
+                            <td>否</td>
+                            <td>--</td>
+                        </tr>
+                        <tr>
+                            <td>刘小平</td>
+                            <td>白酒营销</td>
+                            <td>实股</td>
+                            <td>0.02</td>
+                            <td>2025-04-12</td>
+                            <td>否</td>
+                            <td>--</td>
+                        </tr>
+                        <tr>
+                            <td>张无忌</td>
+                            <td>白酒营销</td>
+                            <td>实股</td>
+                            <td>0.02</td>
+                            <td>2025-04-12</td>
+                            <td>否</td>
+                            <td>--</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn btn-success" onclick="openModal('newShareholderModal')">选择分红股东</button>
+                </div>
+            </div>
+
+            <!-- 股东比例调整 -->
+            <div id="shareholder-adjust" class="tab-content">
+                <div class="info-card">
+                    <h4>👤 股东比例调整说明</h4>
+                    <p>• 以股东维度对已生效的分红比例档案进行调整</p>
+                    <p>• 提交后需要流程审批</p>
+                    <p>• 审批完成后自动调整老板虚股比例保证总和为100%</p>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="请输入股东名称">
+                        <select class="form-control" style="width: auto;">
+                            <option value="">全部状态</option>
+                            <option value="draft">草稿</option>
+                            <option value="pending">审批中</option>
+                            <option value="approved">已完成</option>
+                        </select>
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="openModal('shareholderAdjustModal')">➕ 新增调整</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>调整单号</th>
+                            <th>股东名称</th>
+                            <th>状态</th>
+                            <th>申请人</th>
+                            <th>申请时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ADJ001</td>
+                            <td>张三</td>
+                            <td><span class="status-badge status-approved">已完成</span></td>
+                            <td>财务部-王五</td>
+                            <td>2024-01-15</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewAdjustment(1)">👁️ 查看</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>ADJ002</td>
+                            <td>李四</td>
+                            <td><span class="status-badge status-pending">审批中</span></td>
+                            <td>财务部-王五</td>
+                            <td>2024-01-16</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewAdjustment(2)">👁️ 查看</button>
+                                    <button class="btn btn-warning btn-sm" onclick="editAdjustment(2)">✏️ 编辑</button>
+                                    <button class="btn btn-danger btn-sm" onclick="cancelAdjustment(2)">❌ 撤销</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 门店比例调整 -->
+            <div id="store-adjust" class="tab-content">
+                <div class="info-card">
+                    <h4>🏪 门店比例调整说明</h4>
+                    <p>• 以门店维度对已生效的分红比例档案进行调整</p>
+                    <p>• 可批量调整门店内多个股东的比例</p>
+                    <p>• 提交后需要流程审批</p>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="请输入门店名称">
+                        <select class="form-control" style="width: auto;">
+                            <option value="">全部状态</option>
+                            <option value="draft">草稿</option>
+                            <option value="pending">审批中</option>
+                            <option value="approved">已完成</option>
+                        </select>
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="openModal('storeAdjustModal')">➕ 新增调整</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>调整单号</th>
+                            <th>门店名称</th>
+                            <th>状态</th>
+                            <th>申请人</th>
+                            <th>申请时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SADJ001</td>
+                            <td>朝阳门店</td>
+                            <td><span class="status-badge status-approved">已完成</span></td>
+                            <td>财务部-王五</td>
+                            <td>2024-01-15</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewStoreAdjustment(1)">👁️ 查看</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>SADJ002</td>
+                            <td>海淀门店</td>
+                            <td><span class="status-badge status-pending">审批中</span></td>
+                            <td>财务部-王五</td>
+                            <td>2024-01-16</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary btn-sm" onclick="viewStoreAdjustment(2)">👁️ 查看</button>
+                                    <button class="btn btn-warning btn-sm" onclick="editStoreAdjustment(2)">✏️ 编辑</button>
+                                    <button class="btn btn-danger btn-sm" onclick="cancelStoreAdjustment(2)">❌ 撤销</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 比例调整追溯 -->
+            <div id="ratio-trace" class="tab-content">
+                <div class="info-card">
+                    <h4>🔍 比例调整追溯说明</h4>
+                    <p>• 查看指定股东的分红比例调整历史</p>
+                    <p>• 包含审批中和已生效的调整明细</p>
+                    <p>• 支持按时间范围查询</p>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box" style="flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <label>分红股东：</label>
+                            <select class="form-control" style="width: 150px;" required>
+                                <option value="">请选择股东</option>
+                                <option value="SH001">张三</option>
+                                <option value="SH002">李四</option>
+                                <option value="SH003">ABC投资公司</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <label>生效期间：</label>
+                            <input type="month" class="form-control" style="width: 130px;">
+                            <span>至</span>
+                            <input type="month" class="form-control" style="width: 130px;">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <label>分红大类：</label>
+                            <select class="form-control" style="width: 120px;">
+                                <option value="">全部大类</option>
+                                <option value="CAT001">餐饮分红</option>
+                                <option value="CAT002">零售分红</option>
+                                <option value="CAT003">服务分红</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <label>分红门店：</label>
+                            <select class="form-control" style="width: 120px;">
+                                <option value="">全部门店</option>
+                                <option value="STORE001">朝阳门店</option>
+                                <option value="STORE002">海淀门店</option>
+                                <option value="STORE003">西城门店</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>股东名称</th>
+                            <th>门店名称</th>
+                            <th>调整前比例</th>
+                            <th>调整后比例</th>
+                            <th>调整原因</th>
+                            <th>生效年月</th>
+                            <th>状态</th>
+                            <th>调整时间</th>
+                            <th>操作人</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>张三</td>
+                            <td>朝阳门店</td>
+                            <td>25%</td>
+                            <td>30%</td>
+                            <td>业绩调整</td>
+                            <td>2024-02</td>
+                            <td><span class="status-badge status-approved">已生效</span></td>
+                            <td>2024-01-15</td>
+                            <td>财务部-王五</td>
+                        </tr>
+                        <tr>
+                            <td>张三</td>
+                            <td>海淀门店</td>
+                            <td>20%</td>
+                            <td>25%</td>
+                            <td>业绩调整</td>
+                            <td>2024-02</td>
+                            <td><span class="status-badge status-approved">已生效</span></td>
+                            <td>2024-01-15</td>
+                            <td>财务部-王五</td>
+                        </tr>
+                        <tr>
+                            <td>李四</td>
+                            <td>朝阳门店</td>
+                            <td>15%</td>
+                            <td>20%</td>
+                            <td>股权变更</td>
+                            <td>2024-03</td>
+                            <td><span class="status-badge status-pending">审批中</span></td>
+                            <td>2024-01-16</td>
+                            <td>财务部-王五</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 门店分红比例模态框 -->
+    <div id="storeRatioModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新增门店分红比例</h3>
+                <button class="close" onclick="closeModal('storeRatioModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="storeRatioForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">开店时间</label>
+                            <input type="date" class="form-control" name="openDate" value="2024-04-17">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">启用年月</label>
+                            <input type="month" class="form-control" name="enableMonth" value="2024-04">
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="ratio-summary">
+                    <h4>分红股东配置</h4>
+                    <div style="margin-bottom: 15px;">
+                        <button type="button" class="btn btn-success" onclick="openShareholderSelectModal()">➕ 选择分红股东</button>
+                    </div>
+                    <div class="adjustment-table">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>分红股东</th>
+                                    <th>股东类型</th>
+                                    <th>分红大类</th>
+                                    <th>分红比例(%)</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ratioTableBody">
+                                <!-- 动态添加的股东行将在这里显示 -->
+                            </tbody>
+                        </table>
+                        <div style="margin-top: 10px; text-align: right;">
+                            <span style="font-weight: bold;">总比例: <span id="totalRatio">0.00%</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('storeRatioModal')">取消</button>
+                <button class="btn btn-warning" onclick="saveStoreRatio(false)">保存草稿</button>
+                <button class="btn btn-primary" onclick="saveStoreRatio(true)">保存并启用</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 股东比例调整模态框 -->
+    <div id="shareholderAdjustModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">股东比例调整</h3>
+                <button class="close" onclick="closeModal('shareholderAdjustModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="shareholderAdjustForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">选择股东</label>
+                            <select class="form-control" name="shareholderId">
+                                <option value="">请选择股东</option>
+                                <option value="SH001">张三</option>
+                                <option value="SH002">李四</option>
+                                <option value="SH003">ABC投资公司</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">生效年月</label>
+                            <input type="month" class="form-control" name="effectiveMonth" value="2024-04">
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="adjustment-form">
+                    <h4>门店比例调整</h4>
+                    <table class="data-table adjustment-table">
+                        <thead>
+                            <tr>
+                                <th>门店名称</th>
+                                <th>当前比例(%)</th>
+                                <th>调整后比例(%)</th>
+                                <th>调整幅度</th>
+                                <th>调整原因</th>
+                                <th>附件</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>朝阳门店</td>
+                                <td>25.00</td>
+                                <td><input type="number" class="form-control" min="0" max="100" step="0.01" value="25.00"></td>
+                                <td><span class="text-success">+0.00%</span></td>
+                                <td><input type="text" class="form-control" placeholder="请输入调整原因" style="min-width: 150px;"></td>
+                                <td>
+                                    <input type="file" id="file1" style="display: none;" accept=".pdf,.doc,.docx,.jpg,.png">
+                                    <button type="button" class="btn btn-info btn-sm" onclick="document.getElementById('file1').click()">📎 上传</button>
+                                </td>
+                                <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteStoreRatio(this)">删除</button></td>
+                            </tr>
+                            <tr>
+                                <td>海淀门店</td>
+                                <td>20.00</td>
+                                <td><input type="number" class="form-control" min="0" max="100" step="0.01" value="20.00"></td>
+                                <td><span class="text-success">+0.00%</span></td>
+                                <td><input type="text" class="form-control" placeholder="请输入调整原因" style="min-width: 150px;"></td>
+                                <td>
+                                    <input type="file" id="file2" style="display: none;" accept=".pdf,.doc,.docx,.jpg,.png">
+                                    <button type="button" class="btn btn-info btn-sm" onclick="document.getElementById('file2').click()">📎 上传</button>
+                                </td>
+                                <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteStoreRatio(this)">删除</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('shareholderAdjustModal')">取消</button>
+                <button class="btn btn-warning" onclick="saveShareholderAdjust(false)">保存草稿</button>
+                <button class="btn btn-primary" onclick="saveShareholderAdjust(true)">提交审批</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增分红股东模态框 -->
+    <div id="newShareholderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新增分红股东</h3>
+                <button class="close" onclick="closeModal('newShareholderModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="toolbar" style="margin-bottom: 20px;">
+                    <div>
+                        <button class="btn btn-success" onclick="openModal('shareholderSelectModal')">选择分红股东</button>
+                    </div>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>分红股东</th>
+                            <th>分红大类</th>
+                            <th>股权信息</th>
+                            <th>分红比例</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="newShareholderTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #999; padding: 40px;">暂无数据</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <span style="font-weight: bold;">20条/页</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="saveNewShareholders()">保存</button>
+                <button class="btn btn-secondary" onclick="closeModal('newShareholderModal')">取消</button>
+                <button class="btn btn-info" onclick="closeModal('newShareholderModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 选择分红股东模态框 -->
+    <div id="shareholderSelectModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title">选择股东</h3>
+                <button class="close" onclick="closeModal('shareholderSelectModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">股东类型</label>
+                    <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="shareholderType" value="individual" checked>
+                            <span>自然人</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="shareholderType" value="company">
+                            <span>法人</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">股东名称</label>
+                    <select class="form-control" id="shareholderNameSelect">
+                        <option value="">青岛白民营销有限责任公司品牌有限公司</option>
+                        <option value="SH001">张三</option>
+                        <option value="SH002">李四</option>
+                        <option value="SH003">王五</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">股东类型</label>
+                    <input type="text" class="form-control" value="法人" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">股东标识</label>
+                    <input type="text" class="form-control" value="91370200MA3FQRN977" readonly>
+                </div>
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="confirmSelectShareholder()">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 门店比例调整模态框 -->
+    <div id="storeAdjustModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">门店比例调整</h3>
+                <button class="close" onclick="closeModal('storeAdjustModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="storeAdjustForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">选择门店</label>
+                            <select class="form-control" name="storeId">
+                                <option value="">请选择门店</option>
+                                <option value="STORE001">朝阳门店</option>
+                                <option value="STORE002">海淀门店</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">生效年月</label>
+                            <input type="month" class="form-control" name="effectiveMonth" value="2024-04">
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="adjustment-form">
+                    <h4>股东比例调整</h4>
+                    <table class="data-table adjustment-table">
+                        <thead>
+                            <tr>
+                                <th>股东名称</th>
+                                <th>股东类型</th>
+                                <th>当前比例(%)</th>
+                                <th>调整后比例(%)</th>
+                                <th>调整幅度</th>
+                                <th>调整原因</th>
+                                <th>附件</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>张三</td>
+                                <td>自然人</td>
+                                <td>30.00</td>
+                                <td><input type="number" class="form-control" min="0" max="100" step="0.01" value="30.00"></td>
+                                <td><span class="text-success">+0.00%</span></td>
+                                <td><input type="text" class="form-control" placeholder="请输入调整原因" style="min-width: 150px;"></td>
+                                <td>
+                                    <input type="file" id="storeFile1" style="display: none;" accept=".pdf,.doc,.docx,.jpg,.png">
+                                    <button type="button" class="btn btn-info btn-sm" onclick="document.getElementById('storeFile1').click()">📎 上传</button>
+                                </td>
+                                <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteStoreShareholderRow(this)">删除</button></td>
+                            </tr>
+                            <tr>
+                                <td>李四</td>
+                                <td>自然人</td>
+                                <td>25.00</td>
+                                <td><input type="number" class="form-control" min="0" max="100" step="0.01" value="25.00"></td>
+                                <td><span class="text-success">+0.00%</span></td>
+                                <td><input type="text" class="form-control" placeholder="请输入调整原因" style="min-width: 150px;"></td>
+                                <td>
+                                    <input type="file" id="storeFile2" style="display: none;" accept=".pdf,.doc,.docx,.jpg,.png">
+                                    <button type="button" class="btn btn-info btn-sm" onclick="document.getElementById('storeFile2').click()">📎 上传</button>
+                                </td>
+                                <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteStoreShareholderRow(this)">删除</button></td>
+                            </tr>
+                            <tr>
+                                <td>ABC投资公司</td>
+                                <td>法人公司</td>
+                                <td>45.00</td>
+                                <td><input type="number" class="form-control" min="0" max="100" step="0.01" value="45.00"></td>
+                                <td><span class="text-success">+0.00%</span></td>
+                                <td><input type="text" class="form-control" placeholder="请输入调整原因" style="min-width: 150px;"></td>
+                                <td>
+                                    <input type="file" id="storeFile3" style="display: none;" accept=".pdf,.doc,.docx,.jpg,.png">
+                                    <button type="button" class="btn btn-info btn-sm" onclick="document.getElementById('storeFile3').click()">📎 上传</button>
+                                </td>
+                                <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteStoreShareholderRow(this)">删除</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('storeAdjustModal')">取消</button>
+                <button class="btn btn-warning" onclick="saveStoreAdjust(false)">保存草稿</button>
+                <button class="btn btn-primary" onclick="saveStoreAdjust(true)">提交审批</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 标签页切换
+        function switchTab(tabName) {
+            // 特殊处理：如果当前在门店分红股东详情页面，需要隐藏详情页面
+            if (document.getElementById('store-shareholder-detail').style.display === 'block') {
+                document.getElementById('store-shareholder-detail').style.display = 'none';
+            }
+            
+            // 隐藏所有标签内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签按钮的激活状态
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 显示选中的标签内容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 激活对应的标签按钮
+            event.target.classList.add('active');
+        }
+
+        // 模态框操作
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // 门店分红比例管理
+        function viewStoreRatio(id) {
+            alert('查看门店分红比例详情');
+        }
+
+        function manageStoreRatio(id) {
+            alert('管理门店分红比例（启用/停用股东）');
+        }
+
+        function editStoreRatio(id) {
+            document.querySelector('#storeRatioModal .modal-title').textContent = '编辑门店分红比例';
+            openModal('storeRatioModal');
+        }
+
+        function enableStoreRatio(id) {
+            if (confirm('确定要启用该门店的分红比例吗？启用前请确保比例总和为100%！')) {
+                alert('启用成功！');
+            }
+        }
+
+        function deleteStoreRatio(id) {
+            if (confirm('确定要删除该门店的分红比例配置吗？此操作不可恢复！')) {
+                alert('删除成功！');
+            }
+        }
+
+        function saveStoreRatio(enable) {
+            const action = enable ? '保存并启用' : '保存草稿';
+            alert(`${action}成功！`);
+            closeModal('storeRatioModal');
+        }
+
+        // 门店分红股东管理相关函数
+        function viewStoreShareholderDetail(storeId, storeName, openDate, enableMonth) {
+            // 隐藏门店列表页面
+            document.getElementById('add-shareholder').style.display = 'none';
+            // 显示股东详情页面
+            document.getElementById('store-shareholder-detail').style.display = 'block';
+            
+            // 填充门店信息
+            document.getElementById('currentStoreName').value = storeName;
+            document.getElementById('currentOpenDate').value = openDate;
+            document.getElementById('currentEnableMonth').value = enableMonth;
+        }
+
+        function backToStoreList() {
+            // 隐藏股东详情页面
+            document.getElementById('store-shareholder-detail').style.display = 'none';
+            // 显示门店列表页面
+            document.getElementById('add-shareholder').style.display = 'block';
+        }
+
+        function openNewShareholderModal() {
+            openModal('newShareholderModal');
+        }
+
+        function openShareholderSelectModal() {
+            closeModal('newShareholderModal');
+            openModal('shareholderSelectModal');
+        }
+
+        function confirmSelectShareholder() {
+            const shareholderName = document.getElementById('shareholderNameSelect').value || '青岛白民营销有限责任公司品牌有限公司';
+            const shareholderType = document.querySelector('input[name="shareholderType"]:checked').value === 'individual' ? '自然人' : '法人';
+            
+            // 添加到新增分红股东表格中
+            const tbody = document.getElementById('newShareholderTableBody');
+            
+            // 如果是第一次添加，清除"暂无数据"行
+            if (tbody.children.length === 1 && tbody.children[0].children.length === 1) {
+                tbody.innerHTML = '';
+            }
+            
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${shareholderName}</td>
+                <td>
+                    <select class="form-control" name="dividendCategory">
+                        <option value="">请选择分红大类</option>
+                        <option value="CAT001">白酒营销</option>
+                        <option value="CAT002">零售分红</option>
+                        <option value="CAT003">服务分红</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-control" name="stockType">
+                        <option value="real">实股</option>
+                        <option value="virtual">虚股</option>
+                    </select>
+                </td>
+                <td><input type="number" class="form-control" min="0" max="100" step="0.01" placeholder="0.00"></td>
+                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeShareholderRow(this)">删除</button></td>
+            `;
+            tbody.appendChild(newRow);
+            
+            closeModal('shareholderSelectModal');
+            openModal('newShareholderModal');
+        }
+
+        function removeShareholderRow(btn) {
+            btn.closest('tr').remove();
+            
+            // 如果删除后没有数据，显示"暂无数据"
+            const tbody = document.getElementById('newShareholderTableBody');
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999; padding: 40px;">暂无数据</td></tr>';
+            }
+        }
+
+        function saveNewShareholders() {
+            alert('保存成功！');
+            closeModal('newShareholderModal');
+        }
+
+        // 删除门店分红比例
+        function deleteStoreRatio(btn) {
+            if (confirm('确定要删除该门店的分红比例吗？')) {
+                btn.closest('tr').remove();
+                alert('删除成功！');
+            }
+        }
+
+        // 删除门店调整中的股东行
+        function deleteStoreShareholderRow(btn) {
+            if (confirm('确定要删除该股东的调整记录吗？')) {
+                btn.closest('tr').remove();
+                alert('删除成功！');
+            }
+        }
+
+        function removeRatioRow(btn) {
+            btn.closest('tr').remove();
+            updateTotalRatio();
+        }
+
+        // 全选功能
+        document.getElementById('selectAllShareholders').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('#shareholderSelectModal tbody input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+
+        function updateTotalRatio() {
+            const inputs = document.querySelectorAll('#ratioTableBody input[type="number"]');
+            let total = 0;
+            inputs.forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            document.getElementById('totalRatio').textContent = total.toFixed(2) + '%';
+            
+            // 根据总比例设置颜色
+            const totalElement = document.getElementById('totalRatio');
+            if (total === 100) {
+                totalElement.style.color = '#28a745';
+            } else {
+                totalElement.style.color = '#dc3545';
+            }
+        }
+
+        // 门店新增分红股东
+        function addShareholderToStore(id) {
+            alert('为门店新增分红股东');
+        }
+
+        function viewStoreShareholderList(id) {
+            alert('查看门店股东列表');
+        }
+
+        // 股东比例调整
+        function viewAdjustment(id) {
+            alert('查看调整详情');
+        }
+
+        function editAdjustment(id) {
+            document.querySelector('#shareholderAdjustModal .modal-title').textContent = '编辑股东比例调整';
+            openModal('shareholderAdjustModal');
+        }
+
+        function cancelAdjustment(id) {
+            if (confirm('确定要撤销该调整申请吗？')) {
+                alert('撤销成功！');
+            }
+        }
+
+        function saveShareholderAdjust(submit) {
+            const action = submit ? '提交审批' : '保存草稿';
+            alert(`${action}成功！`);
+            closeModal('shareholderAdjustModal');
+        }
+
+        // 门店比例调整
+        function viewStoreAdjustment(id) {
+            alert('查看门店调整详情');
+        }
+
+        function editStoreAdjustment(id) {
+            document.querySelector('#storeAdjustModal .modal-title').textContent = '编辑门店比例调整';
+            openModal('storeAdjustModal');
+        }
+
+        function cancelStoreAdjustment(id) {
+            if (confirm('确定要撤销该调整申请吗？')) {
+                alert('撤销成功！');
+            }
+        }
+
+        function saveStoreAdjust(submit) {
+            const action = submit ? '提交审批' : '保存草稿';
+            alert(`${action}成功！`);
+            closeModal('storeAdjustModal');
+        }
+
+        // 监听比例输入变化
+        document.addEventListener('input', function(e) {
+            if (e.target.type === 'number' && e.target.closest('#ratioTableBody')) {
+                updateTotalRatio();
+            }
+        });
+
+        // 点击模态框外部关闭
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+
+        // 初始化总比例计算
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTotalRatio();
+        });
+    </script>
+</body>
+</html>

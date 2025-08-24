@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分红系统 - 设计页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            min-width: 120px;
+        }
+
+        .nav-tab:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .content-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .content-panel.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .module-title {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+        }
+
+        .module-title::before {
+            content: '';
+            width: 4px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin-right: 15px;
+            border-radius: 2px;
+        }
+
+        .function-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .function-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .function-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border-left-color: #764ba2;
+        }
+
+        .function-card h3 {
+            color: #2c3e50;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .function-card h3::before {
+            content: '📋';
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .function-card p {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .function-features {
+            list-style: none;
+        }
+
+        .function-features li {
+            color: #495057;
+            padding: 5px 0;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .function-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .workflow-section {
+            background: linear-gradient(135deg, #f1f3f4, #e8eaf6);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .workflow-title {
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .workflow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .workflow-step {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+        }
+
+        .workflow-step::after {
+            content: '→';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .workflow-step:last-child::after {
+            display: none;
+        }
+
+        .step-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            color: white;
+            font-size: 1.5em;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .step-desc {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .requirements-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .requirements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .requirement-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+
+        .requirement-item h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .requirement-item p {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .workflow-steps {
+                flex-direction: column;
+            }
+            
+            .workflow-step::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>分红系统设计</h1>
+            <p>企业分红计算线上化管理系统 - 功能模块设计概览</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showPanel('overview')">系统概览</button>
+            <button class="nav-tab" onclick="showPanel('basic')">基础档案</button>
+            <button class="nav-tab" onclick="showPanel('dividend')">分红档案</button>
+            <button class="nav-tab" onclick="showPanel('ratio')">比例管理</button>
+            <button class="nav-tab" onclick="showPanel('profit')">利润管理</button>
+            <button class="nav-tab" onclick="showPanel('calculation')">计算管理</button>
+            <button class="nav-tab" onclick="showPanel('report')">报表管理</button>
+        </div>
+
+        <!-- 系统概览 -->
+        <div id="overview" class="content-panel active">
+            <div class="module-title">系统概览</div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">6</div>
+                    <div class="stat-label">核心模块</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100</div>
+                    <div class="stat-label">并发用户</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">用户角色</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">≤1</div>
+                    <div class="stat-label">分钟计算</div>
+                </div>
+            </div>
+
+            <div class="workflow-section">
+                <div class="workflow-title">系统业务流程</div>
+                <div class="workflow-steps">
+                    <div class="workflow-step">
+                        <div class="step-icon">🏢</div>
+                        <div class="step-title">档案管理</div>
+                        <div class="step-desc">公司、股东、分红档案维护</div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-icon">📊</div>
+                        <div class="step-title">比例配置</div>
+                        <div class="step-desc">门店分红比例设置与调整</div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-icon">💰</div>
+                        <div class="step-title">利润录入</div>
+                        <div class="step-desc">考核利润数据导入管理</div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-icon">🧮</div>
+                        <div class="step-title">分红计算</div>
+                        <div class="step-desc">自动计算各股东分红额</div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-icon">📈</div>
+                        <div class="step-title">报表查询</div>
+                        <div class="step-desc">分红结果查询与导出</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="requirements-section">
+                <div class="module-title">非功能需求</div>
+                <div class="requirements-grid">
+                    <div class="requirement-item">
+                        <h4>🚀 性能要求</h4>
+                        <p>支持≤100并发用户，计算时间≤1分钟，查询响应≤3秒</p>
+                    </div>
+                    <div class="requirement-item">
+                        <h4>🔒 安全性</h4>
+                        <p>钉钉单点登录，RBAC权限控制，数据加密传输</p>
+                    </div>
+                    <div class="requirement-item">
+                        <h4>🛡️ 可靠性</h4>
+                        <p>事务回滚支持，系统错误率<0.1%</p>
+                    </div>
+                    <div class="requirement-item">
+                        <h4>📱 易用性</h4>
+                        <p>支持批量操作，兼容主流浏览器</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 基础档案管理 -->
+        <div id="basic" class="content-panel">
+            <div class="module-title">基础档案管理</div>
+            <div class="function-grid">
+                <div class="function-card">
+                    <h3>公司档案管理</h3>
+                    <p>对公司档案信息进行全生命周期管理，支持数据导入和在线维护。</p>
+                    <ul class="function-features">
+                        <li>查询、新增、更新、启停用、删除</li>
+                        <li>期初数据模板导入</li>
+                        <li>公司名称和编码唯一性校验</li>
+                        <li>关联关系校验（股东、分红档案）</li>
+                    </ul>
+                </div>
+                <div class="function-card">
+                    <h3>股东档案管理</h3>
+                    <p>维护公司股东基础信息，支持法人公司、合伙企业和自然人股东。</p>
+                    <ul class="function-features">
+                        <li>股东信息增删改查</li>
+                        <li>重复性校验（身份证、手机号）</li>
+                        <li>启用状态管理</li>
+                        <li>停用归档功能</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分红档案管理 -->
+        <div id="dividend" class="content-panel">
+            <div class="module-title">分红档案管理</div>
+            <div class="function-grid">
+                <div class="function-card">
+                    <h3>分红大类管理</h3>
+                    <p>维护公司分红大类，支持手工维护和从公司档案选择两种方式。</p>
+                    <ul class="function-features">
+                        <li>大类名称唯一性校验</li>
+                        <li>启用状态控制</li>
+                        <li>停用归档不可恢复</li>
+                        <li>手工/选择两种维护方式</li>
+                    </ul>
+                </div>
+                <div class="function-card">
+                    <h3>分红门店管理</h3>
+                    <p>从公司档案中选择参与分红的门店，进行分红门店档案管理。</p>
+                    <ul class="function-features">
+                        <li>公司代码唯一性校验</li>
+                        <li>启用门店参与分红比例管理</li>
+                        <li>关联校验防止误删</li>
+                        <li>停用分红功能（不可恢复）</li>
+                    </ul>
+                </div>
+                <div class="function-card">
+                    <h3>分红股东管理</h3>
+                    <p>从股东档案中选择参与分红的股东，建立分红股东档案。</p>
+                    <ul class="function-features">
+                        <li>股东唯一标识校验</li>
+                        <li>启用状态管理</li>
+                        <li>分红比例配置关联</li>
+                        <li>删除权限控制</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分红比例管理 -->
+        <div id="ratio" class="content-panel">
+            <div class="module-title">分红比例管理</div>
+            <div class="function-grid">
+                <div class="function-card">
+                    <h3>门店分红比例管理</h3>
+                    <p>以门店维度维护参与分红的股东及其分红比例，确保总比例为100%。</p>
+                    <ul class="function-features">
+                        <li>分红比例总和100%校验</li>
+                        <li>自动去重功能</li>
+                        <li>启用后写入分红比例档案</li>
+                        <li>已启用记录删除保护</li>
+                    </ul>
+                </div>
+                <div class="function-card">
+                    <h3>门店新增分红股东</h3>
+                    <p>对已生效的分红比例档案，支持新增分红股东功能。</p>
+                    <ul class="function-features">
+                        <li>新增股东初始比例为0</li>
+                        <li>需配合个人比例调整</li>
+                        <li>生效档案动态扩展</li>
+                        <li>流程化管理</li>
+                    </ul>
+                </div>
+                <div class="function-card">
+                    <h3>股东分红比例调整</h3>
+                    <p>支持股东维度和门店维度的分红比例调整，包含审批流程。</p>
+                    <ul class="function-features">
+                        <li>股东维度比例调整</li>
+                        <li>门店维度批量调整</li>
+                        <li>老板虚股自动反向调整</li>
+                        <li>审批流程管理</li>
+                    </ul>
+                </div>
+                <div class="function-card">
+                    <h3>比例调整追溯</h3>
+                    <p>提供分红比例调整的完整追溯功能，支持历史变更查询。</p>
+                    <ul class="function-features">
+                        <li>指定股东调整明细</li>
+                        <li>审批中状态查询</li>
+                        <li>已生效记录追溯</li>
+                        <li>变更历史完整记录</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分红利润管理 -->
+        <div id="profit" class="content-panel">
+            <div class="module-title">分红利润管理</div>
+            <div class="function-grid">
+                <div class="function-card">
+                    <h3>分红利润管理</h3>
+                    <p>财务人员通过模板导入可分红利润数据，支持数据校验和生效管理。</p>
+                    <ul class="function-features">
+                        <li>模板下载和数据导入</li>
+                        <li>期间连续性自动校验</li>
+                        <li>门店编号有效性验证</li>
+                        <li>利润数据生效归档</li>
+                        <li>查询、修改、删除功能</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分红计算管理 -->
+        <div id="calculation" class="content-panel">
+            <div class="module-title">分红计算管理</div>
+            <div class="function-grid">
+                <div class="function-card">
+                    <h3>分红计算服务</h3>
+                    <p>基于分红比例和利润数据，自动计算各股东分红额度。</p>
+                    <ul class="function-features">
+                        <li>分红额 = 分红比例 × 分红利润</li>
+                        <li>门店比例100%校验</li>
+                        <li>按期间自动计算</li>
+                        <li>计算结果实时生成</li>
+                    </ul>
+                </div>
+                <div class="function-card">
+                    <h3>手工触发计算</h3>
+                    <p>提供手动触发分红计算功能，支持按需重新计算。</p>
+                    <ul class="function-features">
+                        <li>手动按钮触发</li>
+                        <li>重新计算支持</li>
+                        <li>归档结果保护</li>
+                        <li>计算状态管理</li>
+                    </ul>
+                </div>
+                <div class="function-card">
+                    <h3>计算结果管理</h3>
+                    <p>分红计算结果的锁定、解锁、归档和调整功能。</p>
+                    <ul class="function-features">
+                        <li>计算结果锁定/解锁</li>
+                        <li>半年度数据归档</li>
+                        <li>功能闸口控制</li>
+                        <li>股东维度批量调整</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分红报表管理 -->
+        <div id="report" class="content-panel">
+            <div class="module-title">分红报表管理</div>
+            <div class="function-grid">
+                <div class="function-card">
+                    <h3>股东分红额查询</h3>
+                    <p>为所有股东提供个人分红情况查询功能。</p>
+                    <ul class="function-features">
+                        <li>个人分红情况查询</li>
+                        <li>历史分红记录</li>
+                        <li>分红明细展示</li>
+                        <li>权限控制访问</li>
+                    </ul>
+                </div>
+                <div class="function-card">
+                    <h3>分红额概览</h3>
+                    <p>按期间展示全公司分红额报表，支持数据导出。</p>
+                    <ul class="function-features">
+                        <li>期间维度报表</li>
+                        <li>全公司分红概览</li>
+                        <li>Excel导出功能</li>
+                        <li>数据统计分析</li>
+                    </ul>
+                </div>
+                <div class="function-card">
+                    <h3>分红比例概览</h3>
+                    <p>按年月展示全公司分红比例报表，支持导出功能。</p>
+                    <ul class="function-features">
+                        <li>年月维度展示</li>
+                        <li>比例变化趋势</li>
+                        <li>报表导出支持</li>
+                        <li>比例分布分析</li>
+                    </ul>
+                </div>
+                <div class="function-card">
+                    <h3>门店比例变动查询</h3>
+                    <p>追溯指定门店在特定期间内股东分红比例的变动情况。</p>
+                    <ul class="function-features">
+                        <li>门店维度追溯</li>
+                        <li>期间范围查询</li>
+                        <li>比例变动明细</li>
+                        <li>变更原因记录</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPanel(panelId) {
+            // 隐藏所有面板
+            const panels = document.querySelectorAll('.content-panel');
+            panels.forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // 移除所有标签的激活状态
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的面板
+            document.getElementById(panelId).classList.add('active');
+            
+            // 激活对应的标签
+            event.target.classList.add('active');
+        }
+
+        // 添加一些交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为功能卡片添加点击效果
+            const cards = document.querySelectorAll('.function-card');
+            cards.forEach(card => {
+                card.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+
+            // 添加统计数字动画
+            const statNumbers = document.querySelectorAll('.stat-number');
+            statNumbers.forEach(stat => {
+                const finalValue = stat.textContent;
+                if (!isNaN(finalValue)) {
+                    let currentValue = 0;
+                    const increment = finalValue / 50;
+                    const timer = setInterval(() => {
+                        currentValue += increment;
+                        if (currentValue >= finalValue) {
+                            stat.textContent = finalValue;
+                            clearInterval(timer);
+                        } else {
+                            stat.textContent = Math.floor(currentValue);
+                        }
+                    }, 30);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
