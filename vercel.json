@@ -1,16 +1,24 @@
 {
+  "name": "fenhong-system",
   "version": 2,
-  "name": "dividend-system-prototype",
   "builds": [
     {
       "src": "**/*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.js",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/",
-      "dest": "/index.html"
+      "dest": "/dividend_system_complete.html"
     },
     {
       "src": "/(.*)",
