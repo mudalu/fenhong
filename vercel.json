@@ -1,29 +1,8 @@
 {
-  "name": "fenhong-system",
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "**/*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "**/*.css",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "**/*.js",
-      "use": "@vercel/static"
+      "source": "/",
+      "destination": "/dividend_system_complete.html"
     }
-  ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/dividend_system_complete.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
-  "trailingSlash": false
+  ]
 }
