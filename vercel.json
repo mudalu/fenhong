@@ -25,6 +25,5 @@
       "dest": "/$1"
     }
   ],
-  "functions": {},
   "trailingSlash": false
 }
